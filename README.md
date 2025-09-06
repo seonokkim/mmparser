@@ -5,7 +5,7 @@
 
 ## Overview
 
-MMParser is a comprehensive multi-model testing framework designed for evaluating various vision-language models on multimodal tasks. This framework follows top-tier research paper standards and provides modular, extensible architecture for model evaluation.
+MMParser is a comprehensive multi-model testing framework designed for evaluating various vision-language models on multimodal tasks. 
 
 ## Features
 
@@ -13,7 +13,6 @@ MMParser is a comprehensive multi-model testing framework designed for evaluatin
 - **Modular Architecture**: Separate test files for each model type
 - **Comprehensive Metrics**: Detailed evaluation metrics and performance analysis
 - **Flexible Configuration**: Easy-to-configure model and evaluation settings
-- **Research-Grade Standards**: Following best practices from top-tier research papers
 
 ## Supported Models
 
