@@ -11,8 +11,9 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
-# Base model directory (relative to project root)
+# Base directories (relative to project root)
 MODEL_BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models", "models-small-3b-6b")
+DATA_BASE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "LongDocURL")
 
 @dataclass
 class ModelConfig:

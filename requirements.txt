@@ -1,0 +1,65 @@
+# Multi-Model Parser (MMParser) Requirements
+# WIP - Work In Progress
+
+# Core dependencies
+torch>=2.0.0
+transformers>=4.35.0
+accelerate>=0.20.0
+datasets>=2.14.0
+
+# Model-specific dependencies
+transformers[torch]>=4.35.0
+sentencepiece>=0.1.99
+protobuf>=3.20.0
+
+# Image processing
+Pillow>=9.0.0
+opencv-python>=4.8.0
+
+# OCR support (optional)
+pytesseract>=0.3.10
+
+# OpenAI integration (optional)
+openai>=1.0.0
+
+# Utilities
+numpy>=1.24.0
+pandas>=2.0.0
+tqdm>=4.65.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Logging and configuration
+python-dotenv>=1.0.0
+PyYAML>=6.0
+
+# Development and testing
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Memory optimization
+psutil>=5.9.0
+memory-profiler>=0.60.0
+
+# Visualization (optional)
+plotly>=5.15.0
+kaleido>=0.2.1  # For static image export
+
+# Data processing
+scikit-learn>=1.3.0
+scipy>=1.10.0
+
+# Web scraping (for data collection)
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# File handling
+pathlib2>=2.3.7  # For Python < 3.4
+
+# GGUF support (for Qwen2.5-Omni-3B-GGUF)
+# Note: GGUF support libraries may need to be added based on specific requirements
+# llama-cpp-python>=0.2.0  # Uncomment if using GGUF models
+
+# AWQ support (for Qwen2-VL-2B-AWQ)
+# auto-gptq>=0.4.0  # Uncomment if using AWQ models

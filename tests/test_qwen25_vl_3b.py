@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Test script for Qwen2.5-Omni-3B-GGUF model
+Test script for Qwen2.5-VL-3B model
 
-This script provides comprehensive testing capabilities for the Qwen2.5-Omni-3B-GGUF model,
+This script provides comprehensive testing capabilities for the Qwen2.5-VL-3B model,
 following top-tier research paper standards for model evaluation.
 """
 
@@ -27,7 +27,7 @@ from utils.metrics import MetricsCalculator
 
 # Import model classes
 try:
-    from transformers import Qwen2_5_OmniForConditionalGeneration, AutoProcessor
+    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
@@ -39,16 +39,16 @@ except ImportError:
     PIL_AVAILABLE = False
 
 @dataclass
-class Qwen25Omni3BGGUFConfig:
-    """Configuration for Qwen2.5-Omni-3B-GGUF evaluation"""
+class Qwen25VL3BConfig:
+    """Configuration for Qwen2.5-VL-3B evaluation"""
     # Model settings
-    model_name: str = "qwen25-omni-3b-gguf"
+    model_name: str = "qwen25-vl-3b"
     data_path: str = ""
     task: str = "understanding"
     
     # Evaluation settings
     num_samples: int = -1  # -1 means all samples
-    output_dir: str = "results/qwen25-omni-3b-gguf"
+    output_dir: str = "results/qwen25-vl-3b"
     
     # Generation settings
     max_new_tokens: int = 512
@@ -64,10 +64,10 @@ class Qwen25Omni3BGGUFConfig:
     use_gpt_extraction: bool = False
     free_form: bool = True
 
-class Qwen25Omni3BGGUFEvaluator(BaseEvaluator):
-    """Evaluator for Qwen2.5-Omni-3B-GGUF model"""
+class Qwen25VL3BEvaluator(BaseEvaluator):
+    """Evaluator for Qwen2.5-VL-3B model"""
     
-    def __init__(self, config: Qwen25Omni3BGGUFConfig):
+    def __init__(self, config: Qwen25VL3BConfig):
         super().__init__(config)
         self.config = config
         self.model_config = get_model_config(config.model_name)
@@ -87,7 +87,7 @@ class Qwen25Omni3BGGUFEvaluator(BaseEvaluator):
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(f'{self.config.output_dir}/qwen25_omni_3b_gguf_evaluation.log'),
+                logging.FileHandler(f'{self.config.output_dir}/qwen25_vl_3b_evaluation.log'),
                 logging.StreamHandler()
             ]
         )
@@ -106,42 +106,104 @@ class Qwen25Omni3BGGUFEvaluator(BaseEvaluator):
         if not model_path.exists():
             raise FileNotFoundError(f"Model path does not exist: {model_path}")
             
-        # Check for GGUF files
-        has_gguf = any(model_path.glob("*.gguf"))
-        if not has_gguf:
-            raise FileNotFoundError(f"No GGUF files found in: {model_path}")
+        # Check for safetensors files
+        has_safetensors = any(model_path.glob("*.safetensors"))
+        if not has_safetensors:
+            raise FileNotFoundError(f"No safetensors files found in: {model_path}")
             
         self.logger.info(f"Model validation passed for {self.config.model_name}")
         
     def load_model(self):
-        """Load Qwen2.5-Omni-3B-GGUF model and processor"""
+        """Load Qwen2.5-VL-3B model and processor"""
         self.logger.info(f"Loading {self.config.model_name} model...")
         
         try:
-            # For GGUF models, we might need special loading logic
-            # This is a placeholder - actual implementation depends on GGUF support
-            self.logger.warning("GGUF model loading not fully implemented yet")
-            self.logger.warning("This is a placeholder implementation")
+            # Load model
+            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                self.model_config.model_path,
+                torch_dtype=torch.float16,
+                device_map="auto" if self.config.device == "auto" else self.config.device,
+                low_cpu_mem_usage=True
+            )
             
-            # Placeholder model loading
-            # In practice, you would use appropriate GGUF loading libraries
-            self.model = None
-            self.processor = None
+            # Load processor
+            self.processor = AutoProcessor.from_pretrained(self.model_config.model_path)
             
-            self.logger.info(f"Placeholder loading completed for {self.config.model_name}")
+            self.logger.info(f"Successfully loaded {self.config.model_name}")
             
         except Exception as e:
             self.logger.error(f"Failed to load model: {e}")
             raise
             
     def generate_response(self, question: str, image_paths: List[str]) -> str:
-        """Generate response using Qwen2.5-Omni-3B-GGUF model"""
+        """Generate response using Qwen2.5-VL-3B model"""
         try:
-            # Placeholder implementation for GGUF model
-            self.logger.warning("GGUF model inference not fully implemented yet")
+            # Load and process images
+            images = []
+            for img_path in image_paths:
+                if os.path.exists(img_path):
+                    image = Image.open(img_path).convert('RGB')
+                    images.append(image)
+                    
+            if not images:
+                return "No valid images found."
             
-            # Return placeholder response
-            return f"[GGUF Model Response] Question: {question}, Images: {len(image_paths)}"
+            # Prepare messages for Qwen2.5-VL
+            if len(images) == 1:
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": question},
+                            {"type": "image_url", "image_url": {"url": image_paths[0]}}
+                        ]
+                    }
+                ]
+            else:
+                content = [{"type": "text", "text": question}]
+                for img_path in image_paths:
+                    content.append({"type": "image_url", "image_url": {"url": img_path}})
+                
+                messages = [{"role": "user", "content": content}]
+            
+            # Apply chat template
+            text = self.processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            
+            # Process inputs
+            if len(images) == 1:
+                inputs = self.processor(text=text, images=images[0], return_tensors="pt")
+            else:
+                inputs = self.processor(text=text, images=images, return_tensors="pt")
+            
+            # Move to device
+            device = next(self.model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            
+            # Generate response
+            with torch.no_grad():
+                generated_ids = self.model.generate(
+                    **inputs,
+                    max_new_tokens=self.config.max_new_tokens,
+                    temperature=self.config.temperature,
+                    top_p=self.config.top_p,
+                    do_sample=True
+                )
+                
+                full_response = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+                
+                # Extract only the assistant's response
+                if "assistant" in full_response:
+                    parts = full_response.split("assistant")
+                    if len(parts) > 1:
+                        response = parts[-1].strip()
+                    else:
+                        response = full_response
+                else:
+                    response = full_response
+                    
+            return response
             
         except Exception as e:
             self.logger.error(f"Error generating response: {e}")
@@ -262,15 +324,15 @@ class Qwen25Omni3BGGUFEvaluator(BaseEvaluator):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Qwen2.5-Omni-3B-GGUF Model Evaluation Script",
+        description="Qwen2.5-VL-3B Model Evaluation Script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Basic evaluation
-  python test_qwen25_omni_3b_gguf.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
+  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
   
   # Full evaluation with custom output
-  python test_qwen25_omni_3b_gguf.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
+  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
         """
     )
     
@@ -283,7 +345,7 @@ Examples:
                        help="Number of samples to evaluate (-1 for all)")
     
     # Output arguments
-    parser.add_argument("--output-dir", type=str, default="results/qwen25-omni-3b-gguf",
+    parser.add_argument("--output-dir", type=str, default="results/qwen25-vl-3b",
                        help="Output directory for results")
     
     # Generation arguments
@@ -304,7 +366,7 @@ Examples:
     args = parser.parse_args()
     
     # Create configuration
-    config = Qwen25Omni3BGGUFConfig(
+    config = Qwen25VL3BConfig(
         data_path=args.data_path,
         task=args.task,
         num_samples=args.num_samples,
@@ -317,12 +379,12 @@ Examples:
     )
     
     # Run evaluation
-    evaluator = Qwen25Omni3BGGUFEvaluator(config)
+    evaluator = Qwen25VL3BEvaluator(config)
     result = evaluator.run_evaluation()
     
     # Print summary
     print("\n" + "="*50)
-    print("QWEN2.5-OMNI-3B-GGUF EVALUATION SUMMARY")
+    print("QWEN2.5-VL-3B EVALUATION SUMMARY")
     print("="*50)
     print(f"Experiment ID: {result['experiment_id']}")
     print(f"Model: {result['model_name']}")
