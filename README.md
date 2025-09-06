@@ -84,15 +84,15 @@ pip install openai
 #### Test a Single Model
 
 ```bash
-# Test Qwen2-VL-2B-AWQ model
+# Test Qwen2-VL-2B-AWQ model with LongDocURL dataset
 python tests/test_qwen2_vl_2b_awq.py \
-    --data-path /path/to/dataset.jsonl \
+    --data-path ../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl \
     --task understanding \
     --num-samples 100
 
-# Test Qwen2.5-VL-3B model
+# Test Qwen2.5-VL-3B model with LongDocURL dataset
 python tests/test_qwen25_vl_3b.py \
-    --data-path /path/to/dataset.jsonl \
+    --data-path ../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl \
     --task reasoning \
     --num-samples 50
 ```
@@ -137,15 +137,37 @@ Each test file accepts various configuration options:
 
 ## Dataset Format
 
-The framework expects JSONL files with the following format:
+The framework uses the LongDocURL dataset format. The data loader automatically converts LongDocURL format to our standard format:
 
+### LongDocURL Original Format
 ```json
 {
-    "question_id": 0,
-    "question": "What company's financial statement is this?",
-    "images": ["/path/to/image1.png", "/path/to/image2.png"],
-    "answer": "Apple Inc.",
-    "task": "understanding"
+    "question_id": "free_gpt4o_4045421_5_34_5",
+    "doc_no": "4045421",
+    "total_pages": 59,
+    "start_end_idx": [5, 34],
+    "question_type": "calculate",
+    "question": "What is the percentage decrease of adolescent pregnancy rates among females aged 18-19 from 2013 to 2017?",
+    "answer": 23.73,
+    "detailed_evidences": "To calculate the percentage decrease...",
+    "evidence_pages": [6],
+    "evidence_sources": ["Figure"],
+    "answer_format": "Float",
+    "task_tag": "Reasoning",
+    "images": ["/data/oss_bucket_0/achao.dc/public_datasets/pdf_pngs/4000-4999/4045/4045421_4.png"],
+    "pdf_path": "/data/oss_bucket_0/achao.dc/public_datasets/ccpdf_zip/4000-4999/4045421.pdf",
+    "subTask": ["SP_Figure_Reasoning"]
+}
+```
+
+### Converted Standard Format
+```json
+{
+    "question_id": "free_gpt4o_4045421_5_34_5",
+    "question": "What is the percentage decrease of adolescent pregnancy rates among females aged 18-19 from 2013 to 2017?",
+    "images": ["../data/LongDocURL/pdf_pngs/4045/4045421_4.png"],
+    "answer": 23.73,
+    "task": "reasoning"
 }
 ```
 

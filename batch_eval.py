@@ -173,7 +173,7 @@ def create_example_config():
             {
                 "name": "qwen2-vl-2b-awq_understanding",
                 "model": "qwen2-vl-2b-awq",
-                "data-path": "data/sample_data.jsonl",
+                "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
                 "task": "understanding",
                 "num-samples": "10",
                 "output-dir": "results/batch_qwen2_vl_2b_awq_understanding"
@@ -181,7 +181,7 @@ def create_example_config():
             {
                 "name": "qwen25-vl-3b_understanding",
                 "model": "qwen25-vl-3b",
-                "data-path": "data/sample_data.jsonl",
+                "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
                 "task": "understanding",
                 "num-samples": "10",
                 "output-dir": "results/batch_qwen25_vl_3b_understanding"
@@ -189,7 +189,7 @@ def create_example_config():
             {
                 "name": "qwen2-vl-2b-awq_reasoning",
                 "model": "qwen2-vl-2b-awq",
-                "data-path": "data/sample_data.jsonl",
+                "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
                 "task": "reasoning",
                 "num-samples": "10",
                 "output-dir": "results/batch_qwen2_vl_2b_awq_reasoning"
@@ -197,10 +197,26 @@ def create_example_config():
             {
                 "name": "qwen25-vl-3b_reasoning",
                 "model": "qwen25-vl-3b",
-                "data-path": "data/sample_data.jsonl",
+                "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
                 "task": "reasoning",
                 "num-samples": "10",
                 "output-dir": "results/batch_qwen25_vl_3b_reasoning"
+            },
+            {
+                "name": "qwen2-vl-2b-awq_locating",
+                "model": "qwen2-vl-2b-awq",
+                "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
+                "task": "locating",
+                "num-samples": "10",
+                "output-dir": "results/batch_qwen2_vl_2b_awq_locating"
+            },
+            {
+                "name": "qwen25-vl-3b_locating",
+                "model": "qwen25-vl-3b",
+                "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
+                "task": "locating",
+                "num-samples": "10",
+                "output-dir": "results/batch_qwen25_vl_3b_locating"
             }
         ]
     }

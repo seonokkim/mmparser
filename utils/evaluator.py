@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
+from .data_loader import LongDocURLDataLoader
+
 @dataclass
 class BaseConfig:
     """Base configuration class for all evaluators"""
@@ -47,26 +49,26 @@ class BaseEvaluator(ABC):
         """Load dataset from the specified path"""
         self.logger.info(f"Loading dataset from: {self.config.data_path}")
         
-        data_path = Path(self.config.data_path)
+        # Use LongDocURL data loader
+        data_loader = LongDocURLDataLoader("../data/LongDocURL")
         
-        if data_path.is_file():
-            # Load from JSONL file
-            dataset = self.load_jsonl_file(data_path)
-        elif data_path.is_dir():
-            # Load from directory (assuming JSONL files)
-            dataset = []
-            for jsonl_file in data_path.glob("*.jsonl"):
-                dataset.extend(self.load_jsonl_file(jsonl_file))
+        # Determine dataset file
+        if self.config.data_path.endswith('.jsonl'):
+            dataset_file = os.path.basename(self.config.data_path)
         else:
-            raise ValueError(f"Data path does not exist: {self.config.data_path}")
+            # Default to 10% dataset
+            dataset_file = "LongDocURL_public_with_subtask_category_10pct.jsonl"
             
+        # Load dataset
+        dataset = data_loader.load_dataset(dataset_file)
+        
         # Filter by task if specified
         if self.config.task != "all":
-            dataset = [item for item in dataset if item.get("task", "").lower() == self.config.task.lower()]
+            dataset = data_loader.filter_by_task(dataset, self.config.task)
             
         # Limit number of samples
         if self.config.num_samples > 0:
-            dataset = dataset[:self.config.num_samples]
+            dataset = data_loader.filter_by_num_samples(dataset, self.config.num_samples)
             
         self.logger.info(f"Loaded {len(dataset)} samples")
         return dataset
