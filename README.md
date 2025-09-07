@@ -299,7 +299,7 @@ This project is currently in WIP status. Contributions are welcome but please no
 
 ## License
 
-This project is part of the ICLR research framework and follows the same license terms.
+This project follows standard open source license terms.
 
 ## Citation
 
@@ -308,7 +308,7 @@ If you use this framework in your research, please cite:
 ```bibtex
 @misc{mmparser2025,
   title={MMParser: Multi-Model Parser for Vision-Language Evaluation},
-  author={ICLR Research Team},
+  author={Riley Kim},
   year={2025},
   note={Work in Progress}
 }
