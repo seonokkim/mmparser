@@ -5,14 +5,17 @@
 
 ## Overview
 
-MMParser is a comprehensive multi-model testing framework designed for evaluating various vision-language models on multimodal tasks. 
+MMParser is a comprehensive multi-model testing framework designed for evaluating various vision-language models on multimodal tasks using the LongDocURL dataset. The framework provides standardized evaluation pipelines for comparing different models across understanding, reasoning, and locating tasks.
 
 ## Features
 
 - **Multi-Model Support**: Test multiple models with consistent evaluation pipeline
-- **Modular Architecture**: Separate test files for each model type
+- **Modular Architecture**: Separate evaluation scripts for each model type
 - **Comprehensive Metrics**: Detailed evaluation metrics and performance analysis
 - **Flexible Configuration**: Easy-to-configure model and evaluation settings
+- **Batch Evaluation**: Run multiple experiments with different configurations
+- **LongDocURL Dataset**: Built-in support for LongDocURL dataset format
+- **Standardized Output**: Consistent result formats across all models
 
 ## Supported Models
 
@@ -33,25 +36,96 @@ MMParser is a comprehensive multi-model testing framework designed for evaluatin
    - Standard safetensors format
    - Min VRAM: 6GB, Recommended: 12GB
 
+4. **Qwen2.5-VL-7B** (`qwen25-vl-7b`)
+   - 7B parameters for vision-language understanding
+   - Standard safetensors format
+   - Min VRAM: 8GB, Recommended: 16GB
+
+5. **Qwen2-VL-7B** (`qwen2-vl-7b`)
+   - 7B parameters for vision-language understanding
+   - Standard safetensors format
+   - Min VRAM: 8GB, Recommended: 16GB
+
+6. **LLaVA-7B** (`llava-7b`)
+   - 7B parameters LLaVA model
+   - Vision-language understanding
+   - Min VRAM: 8GB, Recommended: 16GB
+
+7. **LLaVA-Next-7B** (`llava-next-7b`)
+   - 7B parameters LLaVA-Next model
+   - Enhanced vision-language capabilities
+   - Min VRAM: 8GB, Recommended: 16GB
+
+8. **LLaVA-OneVision-7B** (`llava-onevision-7b`)
+   - 7B parameters LLaVA-OneVision model
+   - Specialized vision understanding
+   - Min VRAM: 8GB, Recommended: 16GB
+
+9. **LLaVA-OneVision-Chat-7B** (`llava-onevision-chat-7b`)
+   - 7B parameters LLaVA-OneVision-Chat model
+   - Conversational vision understanding
+   - Min VRAM: 8GB, Recommended: 16GB
+
+10. **LLaVA-Next-Interleave-7B** (`llava-next-interleave-7b`)
+    - 7B parameters LLaVA-Next-Interleave model
+    - Interleaved vision-language processing
+    - Min VRAM: 8GB, Recommended: 16GB
+
+11. **LLaMA-3-8B** (`llama-3-8b`)
+    - 8B parameters LLaMA-3 model
+    - General language understanding
+    - Min VRAM: 10GB, Recommended: 20GB
+
+12. **LLaMA-32-11B** (`llama-32-11b`)
+    - 11B parameters LLaMA-32 model
+    - Enhanced language understanding
+    - Min VRAM: 12GB, Recommended: 24GB
+
+13. **InternVL3-9B** (`internvl3-9b`)
+    - 9B parameters InternVL3 model
+    - Vision-language understanding
+    - Min VRAM: 10GB, Recommended: 20GB
+
+14. **Qwen3-8B** (`qwen3-8b`)
+    - 8B parameters Qwen3 model
+    - General language understanding
+    - Min VRAM: 10GB, Recommended: 20GB
+
 ## Project Structure
 
 ```
 mmparser/
 ├── README.md                 # This file
+├── requirements.txt          # Python dependencies
+├── batch_eval.py            # Batch evaluation script
 ├── configs/                  # Configuration files
 │   ├── __init__.py
-│   └── model_config.py      # Model configurations
-├── tests/                    # Model-specific test files
-│   ├── test_qwen2_vl_2b_awq.py
-│   ├── test_qwen25_omni_3b_gguf.py
-│   └── test_qwen25_vl_3b.py
+│   ├── model_config.py      # Model configurations
+│   ├── batch_config_example.json  # Example batch config
+│   └── *.json               # Model-specific configs
+├── eval/                     # Model-specific evaluation scripts
+│   ├── eval_qwen2_vl_2b_awq.py
+│   ├── eval_qwen25_omni_3b_gguf.py
+│   ├── eval_qwen25_vl_3b.py
+│   ├── eval_qwen25_vl_7b.py
+│   ├── eval_qwen2_vl_7b.py
+│   ├── eval_llava_7b.py
+│   ├── eval_llava_next_7b.py
+│   ├── eval_llava_onevision_7b.py
+│   ├── eval_llava_onevision_chat_7b.py
+│   ├── eval_llava_next_interleave_7b.py
+│   ├── eval_llama_3_8b.py
+│   ├── eval_llama_32_11b_11b.py
+│   ├── eval_internvl3_9b_9b.py
+│   └── eval_qwen3_8b_8b.py
+├── tests/                    # Unit tests
+│   └── test_data_loader.py
 ├── utils/                    # Utility modules
 │   ├── __init__.py
 │   ├── evaluator.py         # Base evaluator class
+│   ├── data_loader.py       # LongDocURL data loader
 │   └── metrics.py           # Metrics calculation
-├── models/                   # Model-specific implementations
-├── data/                     # Sample data and datasets
-└── results/                  # Evaluation results
+└── venv/                     # Virtual environment (local)
 ```
 
 ## Quick Start
@@ -66,10 +140,16 @@ mmparser/
 ### Installation
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd mmparser
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
-pip install torch transformers accelerate
-pip install Pillow opencv-python
-pip install numpy pandas tqdm
+pip install -r requirements.txt
 
 # Optional: For OCR support
 pip install pytesseract
@@ -84,23 +164,38 @@ pip install openai
 
 ```bash
 # Test Qwen2-VL-2B-AWQ model with LongDocURL dataset
-python tests/test_qwen2_vl_2b_awq.py \
+python eval/eval_qwen2_vl_2b_awq.py \
     --data-path ../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl \
     --task understanding \
     --num-samples 100
 
 # Test Qwen2.5-VL-3B model with LongDocURL dataset
-python tests/test_qwen25_vl_3b.py \
+python eval/eval_qwen25_vl_3b.py \
     --data-path ../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl \
     --task reasoning \
     --num-samples 50
+
+# Test LLaVA-7B model
+python eval/eval_llava_7b.py \
+    --data-path ../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl \
+    --task understanding \
+    --num-samples 25
 ```
 
 #### Batch Evaluation
 
 ```bash
-# Run batch evaluation (coming soon)
-python batch_eval.py --config configs/batch_config.json
+# Create example batch configuration
+python batch_eval.py --create-example
+
+# Run batch evaluation with custom config
+python batch_eval.py --config configs/batch_config_example.json
+
+# Run batch evaluation for specific model only
+python batch_eval.py --config configs/batch_config_example.json --model qwen2-vl-2b-awq
+
+# Run batch evaluation with custom output
+python batch_eval.py --config configs/batch_config_example.json --output results/my_batch_results.json
 ```
 
 ## Configuration
@@ -216,27 +311,43 @@ The framework uses the LongDocURL dataset format. The data loader automatically 
 
 - [x] Basic project structure
 - [x] Model configuration system
-- [x] Qwen2-VL-2B-AWQ test implementation
+- [x] Qwen2-VL-2B-AWQ evaluation implementation
+- [x] Qwen2.5-Omni-3B-GGUF evaluation implementation
+- [x] Qwen2.5-VL-3B evaluation implementation
+- [x] Qwen2.5-VL-7B evaluation implementation
+- [x] Qwen2-VL-7B evaluation implementation
+- [x] LLaVA-7B evaluation implementation
+- [x] LLaVA-Next-7B evaluation implementation
+- [x] LLaVA-OneVision-7B evaluation implementation
+- [x] LLaVA-OneVision-Chat-7B evaluation implementation
+- [x] LLaVA-Next-Interleave-7B evaluation implementation
+- [x] LLaMA-3-8B evaluation implementation
+- [x] LLaMA-32-11B evaluation implementation
+- [x] InternVL3-9B evaluation implementation
+- [x] Qwen3-8B evaluation implementation
 - [x] Base evaluator framework
+- [x] LongDocURL data loader
 - [x] Results saving and logging
+- [x] Batch evaluation system
+- [x] Comprehensive metrics calculator
+- [x] GPU memory optimization
 
 ### 🚧 In Progress
 
-- [ ] Qwen2.5-Omni-3B-GGUF test implementation
-- [ ] Qwen2.5-VL-3B test implementation
-- [ ] Batch evaluation system
-- [ ] Comprehensive metrics calculator
-- [ ] GPU memory optimization
 - [ ] Multi-GPU support
+- [ ] Advanced metrics (BLEU, ROUGE, etc.)
+- [ ] Performance optimization
+- [ ] Error handling improvements
 
 ### 📋 Planned Features
 
-- [ ] Additional model support (LLaVA, CLIP, etc.)
-- [ ] Advanced metrics (BLEU, ROUGE, etc.)
+- [ ] Additional model support (CLIP, BLIP, etc.)
 - [ ] Visualization tools
 - [ ] Web interface for results
 - [ ] Distributed evaluation
 - [ ] Model comparison tools
+- [ ] Automated benchmarking
+- [ ] Result analysis dashboard
 
 ## Contributing
 
@@ -270,6 +381,17 @@ This project is currently in WIP status. Contributions are welcome but please no
 | Qwen2-VL-2B-AWQ | 4GB | 8GB | Quantized model |
 | Qwen2.5-Omni-3B-GGUF | 6GB | 12GB | GGUF format |
 | Qwen2.5-VL-3B | 6GB | 12GB | Standard format |
+| Qwen2.5-VL-7B | 8GB | 16GB | Standard format |
+| Qwen2-VL-7B | 8GB | 16GB | Standard format |
+| LLaVA-7B | 8GB | 16GB | Vision-language model |
+| LLaVA-Next-7B | 8GB | 16GB | Enhanced LLaVA |
+| LLaVA-OneVision-7B | 8GB | 16GB | Specialized vision |
+| LLaVA-OneVision-Chat-7B | 8GB | 16GB | Conversational |
+| LLaVA-Next-Interleave-7B | 8GB | 16GB | Interleaved processing |
+| LLaMA-3-8B | 10GB | 20GB | Language model |
+| LLaMA-32-11B | 12GB | 24GB | Large language model |
+| InternVL3-9B | 10GB | 20GB | Vision-language model |
+| Qwen3-8B | 10GB | 20GB | Language model |
 
 ## Troubleshooting
 

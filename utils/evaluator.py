@@ -50,7 +50,7 @@ class BaseEvaluator(ABC):
         self.logger.info(f"Loading dataset from: {self.config.data_path}")
         
         # Use LongDocURL data loader
-        data_loader = LongDocURLDataLoader("../data/LongDocURL")
+        data_loader = LongDocURLDataLoader("/workspace/data/LongDocURL")
         
         # Determine dataset file
         if self.config.data_path.endswith('.jsonl'):

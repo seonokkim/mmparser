@@ -109,7 +109,7 @@ class LongDocURLDataLoader:
     def convert_image_path(self, original_path: str) -> Optional[str]:
         """Convert original image path to local path"""
         # Original path format: /data/oss_bucket_0/achao.dc/public_datasets/pdf_pngs/4000-4999/4045/4045421_4.png
-        # Local path format: ../data/LongDocURL/pdf_pngs/4045/4045421_4.png
+        # Local path format: /workspace/data/LongDocURL/pdf_pngs/4000-4999/4045/4045421_4.png
         
         try:
             # Extract the relevant parts from the original path
@@ -126,12 +126,16 @@ class LongDocURLDataLoader:
                 self.logger.warning(f"Could not find pdf_pngs in path: {original_path}")
                 return None
                 
-            # Get the subdirectory and filename
-            subdir = path_parts[pdf_pngs_idx + 2]  # Skip pdf_pngs and 4000-4999
-            filename = path_parts[-1]
+            # Get the subdirectory and filename (keep the full structure)
+            remaining_parts = path_parts[pdf_pngs_idx + 1:]  # Skip up to pdf_pngs
+            filename = remaining_parts[-1]
+            subdirs = remaining_parts[:-1]  # All parts except filename
             
             # Construct local path
-            local_path = self.data_base_dir / "pdf_pngs" / subdir / filename
+            local_path = self.data_base_dir / "pdf_pngs"
+            for subdir in subdirs:
+                local_path = local_path / subdir
+            local_path = local_path / filename
             
             # Check if file exists
             if local_path.exists():

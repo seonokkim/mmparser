@@ -122,14 +122,21 @@ class BatchEvaluator:
         
         return script_mapping.get(model_name, '')
         
-    def run_all_experiments(self) -> List[Dict[str, Any]]:
+    def run_all_experiments(self, filter_model: str = None) -> List[Dict[str, Any]]:
         """Run all experiments in the configuration"""
-        print(f"Starting batch evaluation with {len(self.experiments)} experiments")
+        # Filter experiments by model if specified
+        experiments_to_run = self.experiments
+        if filter_model:
+            experiments_to_run = [exp for exp in self.experiments if exp.get('model') == filter_model]
+            print(f"Filtering experiments for model: {filter_model}")
+            print(f"Found {len(experiments_to_run)} experiments for this model")
+        
+        print(f"Starting batch evaluation with {len(experiments_to_run)} experiments")
         print(f"Configuration file: {self.config_file}")
         
         results = []
-        for i, experiment in enumerate(self.experiments, 1):
-            print(f"\n[{i}/{len(self.experiments)}]")
+        for i, experiment in enumerate(experiments_to_run, 1):
+            print(f"\n[{i}/{len(experiments_to_run)}]")
             result = self.run_single_experiment(experiment)
             results.append(result)
             
@@ -257,6 +264,8 @@ Examples:
   
   python batch_eval.py --config configs/batch_config.json --output batch_results.json
   
+  python batch_eval.py --config configs/batch_config.json --model qwen2-vl-2b-awq
+  
   python batch_eval.py --create-example
         """
     )
@@ -280,6 +289,12 @@ Examples:
         help="Create an example configuration file"
     )
     
+    parser.add_argument(
+        "--model",
+        type=str,
+        help="Filter experiments to run only for the specified model"
+    )
+    
     args = parser.parse_args()
     
     if args.create_example:
@@ -297,7 +312,7 @@ Examples:
         
     # Run batch evaluation
     evaluator = BatchEvaluator(args.config)
-    results = evaluator.run_all_experiments()
+    results = evaluator.run_all_experiments(filter_model=args.model)
     
     # Save results
     evaluator.save_batch_results(results, args.output)
