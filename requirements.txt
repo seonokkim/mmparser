@@ -1,5 +1,5 @@
 # Multi-Model Parser (MMParser) Requirements
-# WIP - Work In Progress
+# Active Development - Continuously updated
 
 # Core dependencies
 torch>=2.0.0
@@ -55,7 +55,7 @@ requests>=2.31.0
 beautifulsoup4>=4.12.0
 
 # File handling
-pathlib2>=2.3.7  # For Python < 3.4
+# pathlib2>=2.3.7  # Not needed for Python 3.8+
 
 # GGUF support (for Qwen2.5-Omni-3B-GGUF)
 # Note: GGUF support libraries may need to be added based on specific requirements
@@ -63,6 +63,11 @@ pathlib2>=2.3.7  # For Python < 3.4
 
 # AWQ support (for Qwen2-VL-2B-AWQ)
 # auto-gptq>=0.4.0  # Uncomment if using AWQ models
+
+# Additional model support libraries
+# Note: These are optional and only needed for specific model formats
+# bitsandbytes>=0.41.0  # For 8-bit quantization
+# optimum>=1.14.0  # For optimized model loading
 
 
 
