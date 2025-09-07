@@ -104,20 +104,20 @@ class BatchEvaluator:
     def get_test_script(self, model_name: str) -> str:
         """Get the appropriate test script for a model"""
         script_mapping = {
-            'qwen2-vl-2b-awq': 'tests/test_qwen2_vl_2b_awq.py',
-            'qwen25-omni-3b-gguf': 'tests/test_qwen25_omni_3b_gguf.py',
-            'qwen25-vl-3b': 'tests/test_qwen25_vl_3b.py',
-            'qwen25-vl-7b': 'tests/test_qwen25_vl_7b.py',
-            'qwen2-vl-7b': 'tests/test_qwen2_vl_7b.py',
-            'llava-7b': 'tests/test_llava_7b.py',
-            'llava-next-7b': 'tests/test_llava_next_7b.py',
-            'llava-onevision-7b': 'tests/test_llava_onevision_7b.py',
-            'llava-onevision-chat-7b': 'tests/test_llava_onevision_chat_7b.py',
-            'llava-next-interleave-7b': 'tests/test_llava_next_interleave_7b.py',
-            'llama-3-8b': 'tests/test_llama_3_8b.py',
-            'llama-32-11b': 'tests/test_llama_32_11b_11b.py',
-            'internvl3-9b': 'tests/test_internvl3_9b_9b.py',
-            'qwen3-8b': 'tests/test_qwen3_8b_8b.py'
+            'qwen2-vl-2b-awq': 'eval/eval_qwen2_vl_2b_awq.py',
+            'qwen25-omni-3b-gguf': 'eval/eval_qwen25_omni_3b_gguf.py',
+            'qwen25-vl-3b': 'eval/eval_qwen25_vl_3b.py',
+            'qwen25-vl-7b': 'eval/eval_qwen25_vl_7b.py',
+            'qwen2-vl-7b': 'eval/eval_qwen2_vl_7b.py',
+            'llava-7b': 'eval/eval_llava_7b.py',
+            'llava-next-7b': 'eval/eval_llava_next_7b.py',
+            'llava-onevision-7b': 'eval/eval_llava_onevision_7b.py',
+            'llava-onevision-chat-7b': 'eval/eval_llava_onevision_chat_7b.py',
+            'llava-next-interleave-7b': 'eval/eval_llava_next_interleave_7b.py',
+            'llama-3-8b': 'eval/eval_llama_3_8b.py',
+            'llama-32-11b': 'eval/eval_llama_32_11b_11b.py',
+            'internvl3-9b': 'eval/eval_internvl3_9b_9b.py',
+            'qwen3-8b': 'eval/eval_qwen3_8b_8b.py'
         }
         
         return script_mapping.get(model_name, '')

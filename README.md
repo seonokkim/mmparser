@@ -1,7 +1,7 @@
-# Multi-Model Parser (MMParser) - WIP
+# Multi-Model Parser (MMParser)
 
-> **⚠️ Work In Progress (WIP)**  
-> This project is currently under active development. Features and APIs may change without notice.
+> **🚀 Active Development**  
+> This project is actively maintained and continuously improved with new features and model support.
 
 ## Overview
 
@@ -102,6 +102,8 @@ mmparser/
 │   ├── __init__.py
 │   ├── model_config.py      # Model configurations
 │   ├── batch_config_example.json  # Example batch config
+│   ├── qwen25_vl_3b_single_test.json  # Single test config
+│   ├── qwen25_vl_3b_test.json  # Test config
 │   └── *.json               # Model-specific configs
 ├── eval/                     # Model-specific evaluation scripts
 │   ├── eval_qwen2_vl_2b_awq.py
@@ -196,6 +198,12 @@ python batch_eval.py --config configs/batch_config_example.json --model qwen2-vl
 
 # Run batch evaluation with custom output
 python batch_eval.py --config configs/batch_config_example.json --output results/my_batch_results.json
+
+# Run single test configuration
+python batch_eval.py --config configs/qwen25_vl_3b_single_test.json
+
+# Run test configuration with specific output
+python batch_eval.py --config configs/qwen25_vl_3b_test.json --output results/test_results.json
 ```
 
 ## Configuration
@@ -331,6 +339,9 @@ The framework uses the LongDocURL dataset format. The data loader automatically 
 - [x] Batch evaluation system
 - [x] Comprehensive metrics calculator
 - [x] GPU memory optimization
+- [x] Enhanced batch evaluation with filtering
+- [x] Configuration file management
+- [x] Comprehensive .gitignore setup
 
 ### 🚧 In Progress
 
@@ -351,12 +362,13 @@ The framework uses the LongDocURL dataset format. The data loader automatically 
 
 ## Contributing
 
-This project is currently in WIP status. Contributions are welcome but please note:
+This project is actively maintained and contributions are welcome! Please note:
 
 1. The codebase is under active development
-2. APIs and interfaces may change frequently
+2. APIs and interfaces may change with new features
 3. Please check with maintainers before major contributions
 4. Follow the existing code style and documentation standards
+5. Test your changes thoroughly before submitting
 
 ## Hardware Requirements
 
@@ -438,4 +450,4 @@ If you use this framework in your research, please cite:
 
 ---
 
-**⚠️ Note**: This is a work-in-progress project. Features and APIs are subject to change. Use with caution in production environments.
+**📝 Note**: This project is actively maintained and continuously improved. For production use, please test thoroughly and check for the latest updates.

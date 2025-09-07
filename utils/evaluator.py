@@ -9,12 +9,20 @@ following top-tier research paper standards for model evaluation.
 import os
 import json
 import logging
+import yaml
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
 from .data_loader import LongDocURLDataLoader
+
+# Import Azure OpenAI for answer extraction
+try:
+    from openai import AzureOpenAI
+    AZURE_OPENAI_AVAILABLE = True
+except ImportError:
+    AZURE_OPENAI_AVAILABLE = False
 
 @dataclass
 class BaseConfig:

@@ -156,4 +156,39 @@ data/processed/
 *.h5
 *.hdf5
 
+# Environment and configuration files
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+config.yaml
+config.yml
+secrets.yaml
+secrets.yml
+azure_config.yaml
+azure_config.yml
+openai_config.yaml
+openai_config.yml
+api_keys.yaml
+api_keys.yml
+credentials.yaml
+credentials.yml
+
+# Azure specific
+azure_credentials.json
+azure_config.json
+service_principal.json
+
+# API Keys and sensitive data
+*api_key*
+*secret*
+*credential*
+*password*
+*token*
+
+# Configuration files with sensitive data
+
+references/
+
 
