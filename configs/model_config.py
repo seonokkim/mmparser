@@ -87,6 +87,25 @@ AVAILABLE_MODELS = {
             'top_p': 0.9,
             'do_sample': True
         }
+    ),
+    
+    'qwen25-vl-7b': ModelConfig(
+        name='qwen25-vl-7b',
+        type='qwen',
+        model_class='Qwen2_5_VLForConditionalGeneration',
+        processor_class='AutoProcessor',
+        model_path='Qwen/Qwen2.5-VL-7B-Instruct',
+        parameters='7B',
+        min_vram=8,
+        recommended_vram=16,
+        description='Qwen2.5-VL-7B model for vision-language understanding tasks',
+        supported_tasks=['understanding', 'reasoning', 'locating'],
+        generation_config={
+            'max_new_tokens': 512,
+            'temperature': 0.3,
+            'top_p': 0.9,
+            'do_sample': True
+        }
     )
 }
 

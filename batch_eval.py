@@ -27,7 +27,8 @@ class BatchEvaluator:
     def load_experiments(self) -> List[Dict[str, Any]]:
         """Load experiment configurations from JSON file"""
         with open(self.config_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            config = json.load(f)
+            return config.get('experiments', [])
             
     def run_single_experiment(self, experiment: Dict[str, Any]) -> Dict[str, Any]:
         """Run a single experiment"""
@@ -105,7 +106,18 @@ class BatchEvaluator:
         script_mapping = {
             'qwen2-vl-2b-awq': 'tests/test_qwen2_vl_2b_awq.py',
             'qwen25-omni-3b-gguf': 'tests/test_qwen25_omni_3b_gguf.py',
-            'qwen25-vl-3b': 'tests/test_qwen25_vl_3b.py'
+            'qwen25-vl-3b': 'tests/test_qwen25_vl_3b.py',
+            'qwen25-vl-7b': 'tests/test_qwen25_vl_7b.py',
+            'qwen2-vl-7b': 'tests/test_qwen2_vl_7b.py',
+            'llava-7b': 'tests/test_llava_7b.py',
+            'llava-next-7b': 'tests/test_llava_next_7b.py',
+            'llava-onevision-7b': 'tests/test_llava_onevision_7b.py',
+            'llava-onevision-chat-7b': 'tests/test_llava_onevision_chat_7b.py',
+            'llava-next-interleave-7b': 'tests/test_llava_next_interleave_7b.py',
+            'llama-3-8b': 'tests/test_llama_3_8b.py',
+            'llama-32-11b': 'tests/test_llama_32_11b_11b.py',
+            'internvl3-9b': 'tests/test_internvl3_9b_9b.py',
+            'qwen3-8b': 'tests/test_qwen3_8b_8b.py'
         }
         
         return script_mapping.get(model_name, '')
@@ -125,6 +137,11 @@ class BatchEvaluator:
         
     def save_batch_results(self, results: List[Dict[str, Any]], output_file: str):
         """Save batch evaluation results"""
+        # Create output directory if it doesn't exist
+        output_dir = os.path.dirname(output_file)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            
         batch_report = {
             "batch_id": f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "timestamp": datetime.now().isoformat(),
@@ -253,8 +270,8 @@ Examples:
     parser.add_argument(
         "--output",
         type=str,
-        default="batch_evaluation_results.json",
-        help="Output file for batch results (default: batch_evaluation_results.json)"
+        default="results/batch_evaluation_results.json",
+        help="Output file for batch results (default: results/batch_evaluation_results.json)"
     )
     
     parser.add_argument(

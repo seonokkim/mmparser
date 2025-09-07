@@ -1,0 +1,17 @@
+{
+  "experiments": [
+    {
+      "name": "qwen25-vl-3b_single_sample_test",
+      "model": "qwen25-vl-3b",
+      "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
+      "task": "understanding",
+      "num-samples": 1,
+      "output-dir": "results/qwen25_vl_3b_single_sample",
+      "max-new-tokens": 512,
+      "temperature": 0.3,
+      "top-p": 0.9,
+      "device": "auto",
+      "batch-size": 1
+    }
+  ]
+}

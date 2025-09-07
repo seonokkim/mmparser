@@ -1,0 +1,17 @@
+{
+  "experiments": [
+    {
+      "name": "qwen25-vl-7b_all_data_test",
+      "model": "qwen25-vl-7b",
+      "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
+      "task": "understanding",
+      "num-samples": -1,
+      "output-dir": "results/qwen25_vl_7b_all_data",
+      "max-new-tokens": 512,
+      "temperature": 0.3,
+      "top-p": 0.9,
+      "device": "auto",
+      "batch-size": 1
+    }
+  ]
+}

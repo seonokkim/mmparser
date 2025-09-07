@@ -101,15 +101,22 @@ class Qwen25VL7BEvaluator(BaseEvaluator):
         if not PIL_AVAILABLE:
             raise ImportError("PIL library not available. Install with: pip install Pillow")
             
-        # Check model path
-        model_path = Path(self.model_config.model_path)
-        if not model_path.exists():
-            raise FileNotFoundError(f"Model path does not exist: {model_path}")
-            
-        # Check for model files
-        has_safetensors = any(model_path.glob("*.safetensors"))
-        if not has_safetensors:
-            raise FileNotFoundError(f"No safetensors files found in: {model_path}")
+        # Check model path - handle both local paths and Hugging Face model IDs
+        model_path = self.model_config.model_path
+        
+        # If it's a Hugging Face model ID (contains '/'), skip local file validation
+        if '/' in model_path and not Path(model_path).exists():
+            self.logger.info(f"Using Hugging Face model: {model_path}")
+        else:
+            # Check local model path
+            model_path = Path(model_path)
+            if not model_path.exists():
+                raise FileNotFoundError(f"Model path does not exist: {model_path}")
+                
+            # Check for model files
+            has_safetensors = any(model_path.glob("*.safetensors"))
+            if not has_safetensors:
+                raise FileNotFoundError(f"No safetensors files found in: {model_path}")
             
         self.logger.info(f"Model validation passed for {self.config.model_name}")
         
