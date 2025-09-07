@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Test script for Qwen2.5-VL-3B model
+Test script for LLaVA-OneVision-7B model
 
-This script provides comprehensive testing capabilities for the Qwen2.5-VL-3B model,
+This script provides comprehensive testing capabilities for the LLaVA-OneVision-7B model,
 following top-tier research paper standards for model evaluation.
 """
 
@@ -27,7 +27,7 @@ from utils.metrics import MetricsCalculator
 
 # Import model classes
 try:
-    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+    from transformers import LlavaForConditionalGeneration, AutoProcessor
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
@@ -39,16 +39,16 @@ except ImportError:
     PIL_AVAILABLE = False
 
 @dataclass
-class Qwen25VL3BConfig:
-    """Configuration for Qwen2.5-VL-3B evaluation"""
+class LLaVAOneVision7BConfig:
+    """Configuration for LLaVA-OneVision-7B evaluation"""
     # Model settings
-    model_name: str = "qwen25-vl-3b"
+    model_name: str = "llava-onevision-7b"
     data_path: str = ""
     task: str = "understanding"
     
     # Evaluation settings
     num_samples: int = -1  # -1 means all samples
-    output_dir: str = "results/qwen25-vl-3b"
+    output_dir: str = "results/llava-onevision-7b"
     
     # Generation settings
     max_new_tokens: int = 512
@@ -64,10 +64,10 @@ class Qwen25VL3BConfig:
     use_gpt_extraction: bool = False
     free_form: bool = True
 
-class Qwen25VL3BEvaluator(BaseEvaluator):
-    """Evaluator for Qwen2.5-VL-3B model"""
+class LLaVAOneVision7BEvaluator(BaseEvaluator):
+    """Evaluator for LLaVA-OneVision-7B model"""
     
-    def __init__(self, config: Qwen25VL3BConfig):
+    def __init__(self, config: LLaVAOneVision7BConfig):
         super().__init__(config)
         self.config = config
         self.model_config = get_model_config(config.model_name)
@@ -87,7 +87,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(f'{self.config.output_dir}/qwen25_vl_3b_evaluation.log'),
+                logging.FileHandler(f'{self.config.output_dir}/llava_onevision_7b_evaluation.log'),
                 logging.StreamHandler()
             ]
         )
@@ -106,7 +106,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         if not model_path.exists():
             raise FileNotFoundError(f"Model path does not exist: {model_path}")
             
-        # Check for safetensors files
+        # Check for model files
         has_safetensors = any(model_path.glob("*.safetensors"))
         if not has_safetensors:
             raise FileNotFoundError(f"No safetensors files found in: {model_path}")
@@ -114,12 +114,12 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         self.logger.info(f"Model validation passed for {self.config.model_name}")
         
     def load_model(self):
-        """Load Qwen2.5-VL-3B model and processor"""
+        """Load LLaVA-OneVision-7B model and processor"""
         self.logger.info(f"Loading {self.config.model_name} model...")
         
         try:
             # Load model
-            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            self.model = LlavaForConditionalGeneration.from_pretrained(
                 self.model_config.model_path,
                 torch_dtype=torch.float16,
                 device_map="auto" if self.config.device == "auto" else self.config.device,
@@ -136,7 +136,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             raise
             
     def generate_response(self, question: str, image_paths: List[str]) -> str:
-        """Generate response using Qwen2.5-VL-3B model"""
+        """Generate response using LLaVA-OneVision-7B model"""
         try:
             # Load and process images
             images = []
@@ -148,34 +148,21 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             if not images:
                 return "No valid images found."
             
-            # Prepare messages for Qwen2.5-VL
-            if len(images) == 1:
-                messages = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": question},
-                            {"type": "image_url", "image_url": {"url": image_paths[0]}}
-                        ]
-                    }
-                ]
-            else:
-                content = [{"type": "text", "text": question}]
-                for img_path in image_paths:
-                    content.append({"type": "image_url", "image_url": {"url": img_path}})
-                
-                messages = [{"role": "user", "content": content}]
+            # Prepare conversation for LLaVA
+            conversation = [
+                {
+                    "role": "user",
+                    "content": f"<image>\n{question}"
+                }
+            ]
             
             # Apply chat template
             text = self.processor.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
+                conversation, tokenize=False, add_generation_prompt=True
             )
             
             # Process inputs
-            if len(images) == 1:
-                inputs = self.processor(text=text, images=images[0], return_tensors="pt")
-            else:
-                inputs = self.processor(text=text, images=images, return_tensors="pt")
+            inputs = self.processor(text=text, images=images[0], return_tensors="pt")
             
             # Move to device
             device = next(self.model.parameters()).device
@@ -324,15 +311,15 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Qwen2.5-VL-3B Model Evaluation Script",
+        description="LLaVA-OneVision-7B Model Evaluation Script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Basic evaluation
-  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
+  python test_llava_onevision_7b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
   
   # Full evaluation with custom output
-  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
+  python test_llava_onevision_7b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
         """
     )
     
@@ -345,7 +332,7 @@ Examples:
                        help="Number of samples to evaluate (-1 for all)")
     
     # Output arguments
-    parser.add_argument("--output-dir", type=str, default="results/qwen25-vl-3b",
+    parser.add_argument("--output-dir", type=str, default="results/llava-onevision-7b",
                        help="Output directory for results")
     
     # Generation arguments
@@ -366,7 +353,7 @@ Examples:
     args = parser.parse_args()
     
     # Create configuration
-    config = Qwen25VL3BConfig(
+    config = LLaVAOneVision7BConfig(
         data_path=args.data_path,
         task=args.task,
         num_samples=args.num_samples,
@@ -379,12 +366,12 @@ Examples:
     )
     
     # Run evaluation
-    evaluator = Qwen25VL3BEvaluator(config)
+    evaluator = LLaVAOneVision7BEvaluator(config)
     result = evaluator.run_evaluation()
     
     # Print summary
     print("\n" + "="*50)
-    print("QWEN2.5-VL-3B EVALUATION SUMMARY")
+    print("LLAVA-ONEVISION-7B EVALUATION SUMMARY")
     print("="*50)
     print(f"Experiment ID: {result['experiment_id']}")
     print(f"Model: {result['model_name']}")
@@ -397,5 +384,4 @@ Examples:
 
 if __name__ == "__main__":
     main()
-
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Test script for Qwen2.5-VL-3B model
+Test script for LLaMA-32-11B-11B model
 
-This script provides comprehensive testing capabilities for the Qwen2.5-VL-3B model,
+This script provides comprehensive testing capabilities for the LLaMA-32-11B-11B model,
 following top-tier research paper standards for model evaluation.
 """
 
@@ -27,28 +27,22 @@ from utils.metrics import MetricsCalculator
 
 # Import model classes
 try:
-    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+    from transformers import LlamaForCausalLM, AutoTokenizer
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
 
-try:
-    from PIL import Image
-    PIL_AVAILABLE = True
-except ImportError:
-    PIL_AVAILABLE = False
-
 @dataclass
-class Qwen25VL3BConfig:
-    """Configuration for Qwen2.5-VL-3B evaluation"""
+class LLaMA3211B11BConfig:
+    """Configuration for LLaMA-32-11B-11B evaluation"""
     # Model settings
-    model_name: str = "qwen25-vl-3b"
+    model_name: str = "llama-32-11b-11b"
     data_path: str = ""
     task: str = "understanding"
     
     # Evaluation settings
     num_samples: int = -1  # -1 means all samples
-    output_dir: str = "results/qwen25-vl-3b"
+    output_dir: str = "results/llama-32-11b-11b"
     
     # Generation settings
     max_new_tokens: int = 512
@@ -64,15 +58,15 @@ class Qwen25VL3BConfig:
     use_gpt_extraction: bool = False
     free_form: bool = True
 
-class Qwen25VL3BEvaluator(BaseEvaluator):
-    """Evaluator for Qwen2.5-VL-3B model"""
+class LLaMA3211B11BEvaluator(BaseEvaluator):
+    """Evaluator for LLaMA-32-11B-11B model"""
     
-    def __init__(self, config: Qwen25VL3BConfig):
+    def __init__(self, config: LLaMA3211B11BConfig):
         super().__init__(config)
         self.config = config
         self.model_config = get_model_config(config.model_name)
         self.model = None
-        self.processor = None
+        self.tokenizer = None
         
         # Setup logging
         self.setup_logging()
@@ -87,7 +81,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(f'{self.config.output_dir}/qwen25_vl_3b_evaluation.log'),
+                logging.FileHandler(f'{self.config.output_dir}/llama_32_11b_11b_evaluation.log'),
                 logging.StreamHandler()
             ]
         )
@@ -98,15 +92,12 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         if not TRANSFORMERS_AVAILABLE:
             raise ImportError("transformers library not available. Install with: pip install transformers")
             
-        if not PIL_AVAILABLE:
-            raise ImportError("PIL library not available. Install with: pip install Pillow")
-            
         # Check model path
         model_path = Path(self.model_config.model_path)
         if not model_path.exists():
             raise FileNotFoundError(f"Model path does not exist: {model_path}")
             
-        # Check for safetensors files
+        # Check for model files
         has_safetensors = any(model_path.glob("*.safetensors"))
         if not has_safetensors:
             raise FileNotFoundError(f"No safetensors files found in: {model_path}")
@@ -114,20 +105,20 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         self.logger.info(f"Model validation passed for {self.config.model_name}")
         
     def load_model(self):
-        """Load Qwen2.5-VL-3B model and processor"""
+        """Load LLaMA-32-11B-11B model and tokenizer"""
         self.logger.info(f"Loading {self.config.model_name} model...")
         
         try:
             # Load model
-            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            self.model = LlamaForCausalLM.from_pretrained(
                 self.model_config.model_path,
                 torch_dtype=torch.float16,
                 device_map="auto" if self.config.device == "auto" else self.config.device,
                 low_cpu_mem_usage=True
             )
             
-            # Load processor
-            self.processor = AutoProcessor.from_pretrained(self.model_config.model_path)
+            # Load tokenizer
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_config.model_path)
             
             self.logger.info(f"Successfully loaded {self.config.model_name}")
             
@@ -136,46 +127,14 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             raise
             
     def generate_response(self, question: str, image_paths: List[str]) -> str:
-        """Generate response using Qwen2.5-VL-3B model"""
+        """Generate response using LLaMA-32-11B-11B model"""
         try:
-            # Load and process images
-            images = []
-            for img_path in image_paths:
-                if os.path.exists(img_path):
-                    image = Image.open(img_path).convert('RGB')
-                    images.append(image)
-                    
-            if not images:
-                return "No valid images found."
+            # LLaMA-32-11B-11B is a text-only model, so we ignore images
+            # Prepare prompt
+            prompt = f"Question: {question}\nAnswer:"
             
-            # Prepare messages for Qwen2.5-VL
-            if len(images) == 1:
-                messages = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": question},
-                            {"type": "image_url", "image_url": {"url": image_paths[0]}}
-                        ]
-                    }
-                ]
-            else:
-                content = [{"type": "text", "text": question}]
-                for img_path in image_paths:
-                    content.append({"type": "image_url", "image_url": {"url": img_path}})
-                
-                messages = [{"role": "user", "content": content}]
-            
-            # Apply chat template
-            text = self.processor.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-            
-            # Process inputs
-            if len(images) == 1:
-                inputs = self.processor(text=text, images=images[0], return_tensors="pt")
-            else:
-                inputs = self.processor(text=text, images=images, return_tensors="pt")
+            # Tokenize input
+            inputs = self.tokenizer(prompt, return_tensors="pt")
             
             # Move to device
             device = next(self.model.parameters()).device
@@ -188,18 +147,16 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
                     max_new_tokens=self.config.max_new_tokens,
                     temperature=self.config.temperature,
                     top_p=self.config.top_p,
-                    do_sample=True
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.eos_token_id
                 )
                 
-                full_response = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+                # Decode response
+                full_response = self.tokenizer.decode(generated_ids[0], skip_special_tokens=True)
                 
-                # Extract only the assistant's response
-                if "assistant" in full_response:
-                    parts = full_response.split("assistant")
-                    if len(parts) > 1:
-                        response = parts[-1].strip()
-                    else:
-                        response = full_response
+                # Extract only the answer part
+                if "Answer:" in full_response:
+                    response = full_response.split("Answer:")[-1].strip()
                 else:
                     response = full_response
                     
@@ -324,15 +281,15 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Qwen2.5-VL-3B Model Evaluation Script",
+        description="LLaMA-32-11B-11B Model Evaluation Script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Basic evaluation
-  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
+  python test_llama_32_11b_11b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
   
   # Full evaluation with custom output
-  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
+  python test_llama_32_11b_11b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
         """
     )
     
@@ -345,7 +302,7 @@ Examples:
                        help="Number of samples to evaluate (-1 for all)")
     
     # Output arguments
-    parser.add_argument("--output-dir", type=str, default="results/qwen25-vl-3b",
+    parser.add_argument("--output-dir", type=str, default="results/llama-32-11b-11b",
                        help="Output directory for results")
     
     # Generation arguments
@@ -366,7 +323,7 @@ Examples:
     args = parser.parse_args()
     
     # Create configuration
-    config = Qwen25VL3BConfig(
+    config = LLaMA3211B11BConfig(
         data_path=args.data_path,
         task=args.task,
         num_samples=args.num_samples,
@@ -379,12 +336,12 @@ Examples:
     )
     
     # Run evaluation
-    evaluator = Qwen25VL3BEvaluator(config)
+    evaluator = LLaMA3211B11BEvaluator(config)
     result = evaluator.run_evaluation()
     
     # Print summary
     print("\n" + "="*50)
-    print("QWEN2.5-VL-3B EVALUATION SUMMARY")
+    print("LLAMA-32-11B-11B EVALUATION SUMMARY")
     print("="*50)
     print(f"Experiment ID: {result['experiment_id']}")
     print(f"Model: {result['model_name']}")
@@ -397,5 +354,4 @@ Examples:
 
 if __name__ == "__main__":
     main()
-
 

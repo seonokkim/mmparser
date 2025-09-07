@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Test script for Qwen2.5-VL-3B model
+Test script for Qwen3-8B-8B model
 
-This script provides comprehensive testing capabilities for the Qwen2.5-VL-3B model,
+This script provides comprehensive testing capabilities for the Qwen3-8B-8B model,
 following top-tier research paper standards for model evaluation.
 """
 
@@ -27,7 +27,7 @@ from utils.metrics import MetricsCalculator
 
 # Import model classes
 try:
-    from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+    from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
@@ -39,16 +39,16 @@ except ImportError:
     PIL_AVAILABLE = False
 
 @dataclass
-class Qwen25VL3BConfig:
-    """Configuration for Qwen2.5-VL-3B evaluation"""
+class Qwen38B8BConfig:
+    """Configuration for Qwen3-8B-8B evaluation"""
     # Model settings
-    model_name: str = "qwen25-vl-3b"
+    model_name: str = "qwen3-8b-8b"
     data_path: str = ""
     task: str = "understanding"
     
     # Evaluation settings
     num_samples: int = -1  # -1 means all samples
-    output_dir: str = "results/qwen25-vl-3b"
+    output_dir: str = "results/qwen3-8b-8b"
     
     # Generation settings
     max_new_tokens: int = 512
@@ -64,10 +64,10 @@ class Qwen25VL3BConfig:
     use_gpt_extraction: bool = False
     free_form: bool = True
 
-class Qwen25VL3BEvaluator(BaseEvaluator):
-    """Evaluator for Qwen2.5-VL-3B model"""
+class Qwen38B8BEvaluator(BaseEvaluator):
+    """Evaluator for Qwen3-8B-8B model"""
     
-    def __init__(self, config: Qwen25VL3BConfig):
+    def __init__(self, config: Qwen38B8BConfig):
         super().__init__(config)
         self.config = config
         self.model_config = get_model_config(config.model_name)
@@ -87,7 +87,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(f'{self.config.output_dir}/qwen25_vl_3b_evaluation.log'),
+                logging.FileHandler(f'{self.config.output_dir}/qwen3_8b_8b_evaluation.log'),
                 logging.StreamHandler()
             ]
         )
@@ -106,7 +106,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         if not model_path.exists():
             raise FileNotFoundError(f"Model path does not exist: {model_path}")
             
-        # Check for safetensors files
+        # Check for model files
         has_safetensors = any(model_path.glob("*.safetensors"))
         if not has_safetensors:
             raise FileNotFoundError(f"No safetensors files found in: {model_path}")
@@ -114,12 +114,12 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         self.logger.info(f"Model validation passed for {self.config.model_name}")
         
     def load_model(self):
-        """Load Qwen2.5-VL-3B model and processor"""
+        """Load Qwen3-8B-8B model and processor"""
         self.logger.info(f"Loading {self.config.model_name} model...")
         
         try:
             # Load model
-            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            self.model = Qwen2VLForConditionalGeneration.from_pretrained(
                 self.model_config.model_path,
                 torch_dtype=torch.float16,
                 device_map="auto" if self.config.device == "auto" else self.config.device,
@@ -136,7 +136,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             raise
             
     def generate_response(self, question: str, image_paths: List[str]) -> str:
-        """Generate response using Qwen2.5-VL-3B model"""
+        """Generate response using Qwen3-8B-8B model"""
         try:
             # Load and process images
             images = []
@@ -148,7 +148,7 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
             if not images:
                 return "No valid images found."
             
-            # Prepare messages for Qwen2.5-VL
+            # Prepare messages for Qwen3
             if len(images) == 1:
                 messages = [
                     {
@@ -324,15 +324,15 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Qwen2.5-VL-3B Model Evaluation Script",
+        description="Qwen3-8B-8B Model Evaluation Script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Basic evaluation
-  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
+  python test_qwen3_8b_8b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100
   
   # Full evaluation with custom output
-  python test_qwen25_vl_3b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
+  python test_qwen3_8b_8b.py --data-path /path/to/data.jsonl --task understanding --num-samples 100 --output-dir results/custom
         """
     )
     
@@ -345,7 +345,7 @@ Examples:
                        help="Number of samples to evaluate (-1 for all)")
     
     # Output arguments
-    parser.add_argument("--output-dir", type=str, default="results/qwen25-vl-3b",
+    parser.add_argument("--output-dir", type=str, default="results/qwen3-8b-8b",
                        help="Output directory for results")
     
     # Generation arguments
@@ -366,7 +366,7 @@ Examples:
     args = parser.parse_args()
     
     # Create configuration
-    config = Qwen25VL3BConfig(
+    config = Qwen38B8BConfig(
         data_path=args.data_path,
         task=args.task,
         num_samples=args.num_samples,
@@ -379,12 +379,12 @@ Examples:
     )
     
     # Run evaluation
-    evaluator = Qwen25VL3BEvaluator(config)
+    evaluator = Qwen38B8BEvaluator(config)
     result = evaluator.run_evaluation()
     
     # Print summary
     print("\n" + "="*50)
-    print("QWEN2.5-VL-3B EVALUATION SUMMARY")
+    print("QWEN3-8B-8B EVALUATION SUMMARY")
     print("="*50)
     print(f"Experiment ID: {result['experiment_id']}")
     print(f"Model: {result['model_name']}")
@@ -397,5 +397,4 @@ Examples:
 
 if __name__ == "__main__":
     main()
-
 
