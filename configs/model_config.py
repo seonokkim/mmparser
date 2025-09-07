@@ -120,10 +120,27 @@ def get_available_models() -> list:
     return list(AVAILABLE_MODELS.keys())
 
 def validate_model_path(model_name: str) -> bool:
-    """Validate that model files exist"""
-    config = get_model_config(model_name)
-    model_path = Path(config.model_path)
-    return model_path.exists() and any(model_path.glob("*.safetensors")) or any(model_path.glob("*.gguf"))
+    """Validate that model files exist and are not corrupted"""
+    try:
+        from utils.model_manager import ModelManager
+        manager = ModelManager()
+        is_valid, _ = manager.validate_model_integrity(model_name)
+        return is_valid
+    except ImportError:
+        # Fallback to basic validation if model_manager is not available
+        config = get_model_config(model_name)
+        model_path = Path(config.model_path)
+        return model_path.exists() and any(model_path.glob("*.safetensors")) or any(model_path.glob("*.gguf"))
+
+def ensure_model_available(model_name: str, max_retries: int = 3) -> bool:
+    """Ensure model is available and valid, with automatic re-download on corruption"""
+    try:
+        from utils.model_manager import ModelManager
+        manager = ModelManager()
+        return manager.ensure_model_available(model_name, max_retries)
+    except ImportError:
+        # Fallback: just check if model exists
+        return validate_model_path(model_name)
 
 def get_model_info(model_name: str) -> Dict[str, Any]:
     """Get detailed information about a model"""

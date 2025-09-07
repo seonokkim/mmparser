@@ -53,6 +53,15 @@ class BaseEvaluator(ABC):
         )
         self.logger = logging.getLogger(self.__class__.__name__)
         
+    def ensure_model_availability(self, model_name: str) -> bool:
+        """Ensure model is available and valid, with automatic re-download on corruption"""
+        try:
+            from configs.model_config import ensure_model_available
+            return ensure_model_available(model_name)
+        except Exception as e:
+            self.logger.error(f"Failed to ensure model availability: {e}")
+            return False
+        
     def load_dataset(self) -> List[Dict[str, Any]]:
         """Load dataset from the specified path"""
         self.logger.info(f"Loading dataset from: {self.config.data_path}")

@@ -1,12 +1,11 @@
 {
   "experiments": [
     {
-      "name": "qwen25_vl_3b_reasoning_single_sample",
+      "name": "qwen25-vl-3b_single_test",
       "model": "qwen25-vl-3b",
-      "data-path": "/workspace/data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
-      "task": "reasoning",
+      "data-path": "../data/LongDocURL/LongDocURL_public_with_subtask_category_10pct.jsonl",
       "num-samples": "1",
-      "output-dir": "results/qwen25_vl_3b_test"
+      "output-dir": "results/qwen25_vl_3b_single_test"
     }
   ]
 }

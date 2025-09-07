@@ -101,40 +101,57 @@ class Qwen25VL3BEvaluator(BaseEvaluator):
         if not PIL_AVAILABLE:
             raise ImportError("PIL library not available. Install with: pip install Pillow")
             
-        # Check model path
-        model_path = Path(self.model_config.model_path)
-        if not model_path.exists():
-            raise FileNotFoundError(f"Model path does not exist: {model_path}")
-            
-        # Check for safetensors files
-        has_safetensors = any(model_path.glob("*.safetensors"))
-        if not has_safetensors:
-            raise FileNotFoundError(f"No safetensors files found in: {model_path}")
+        # Ensure model is available and valid (with automatic re-download on corruption)
+        self.logger.info(f"Ensuring model availability for {self.config.model_name}")
+        if not self.ensure_model_availability(self.config.model_name):
+            raise RuntimeError(f"Failed to ensure model availability for {self.config.model_name}")
             
         self.logger.info(f"Model validation passed for {self.config.model_name}")
         
     def load_model(self):
-        """Load Qwen2.5-VL-3B model and processor"""
+        """Load Qwen2.5-VL-3B model and processor with automatic re-download for corrupted models"""
         self.logger.info(f"Loading {self.config.model_name} model...")
         
-        try:
-            # Load model
-            self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                self.model_config.model_path,
-                torch_dtype=torch.float16,
-                device_map="auto" if self.config.device == "auto" else self.config.device,
-                low_cpu_mem_usage=True
-            )
-            
-            # Load processor
-            self.processor = AutoProcessor.from_pretrained(self.model_config.model_path)
-            
-            self.logger.info(f"Successfully loaded {self.config.model_name}")
-            
-        except Exception as e:
-            self.logger.error(f"Failed to load model: {e}")
-            raise
-            
+        max_retries = 2
+        for attempt in range(max_retries):
+            try:
+                # Load model
+                self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                    self.model_config.model_path,
+                    torch_dtype=torch.float16,
+                    device_map="auto" if self.config.device == "auto" else self.config.device,
+                    low_cpu_mem_usage=True
+                )
+                
+                # Load processor
+                self.processor = AutoProcessor.from_pretrained(self.model_config.model_path)
+                
+                self.logger.info(f"Successfully loaded {self.config.model_name}")
+                return
+                
+            except Exception as e:
+                error_msg = str(e)
+                self.logger.error(f"Failed to load model (attempt {attempt + 1}/{max_retries}): {e}")
+                
+                # Check if it's a model corruption error
+                if any(keyword in error_msg.lower() for keyword in [
+                    "incomplete metadata", "file not fully covered", "deserializing header",
+                    "corrupted", "incomplete", "safetensor", "checkpoint"
+                ]):
+                    if attempt < max_retries - 1:
+                        self.logger.warning("Detected corrupted model files. Attempting to re-download...")
+                        if self.ensure_model_availability(self.config.model_name):
+                            self.logger.info("Model re-downloaded successfully, retrying load...")
+                            continue
+                        else:
+                            self.logger.error("Failed to re-download model")
+                    else:
+                        self.logger.error("Max retries reached. Model download failed.")
+                        raise
+                else:
+                    # For other errors, don't retry
+                    raise
+                    
     def generate_response(self, question: str, image_paths: List[str]) -> str:
         """Generate response using Qwen2.5-VL-3B model"""
         try:

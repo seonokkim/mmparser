@@ -16,6 +16,8 @@ MMParser is a comprehensive multi-model testing framework designed for evaluatin
 - **Batch Evaluation**: Run multiple experiments with different configurations
 - **LongDocURL Dataset**: Built-in support for LongDocURL dataset format
 - **Standardized Output**: Consistent result formats across all models
+- **Automatic Model Management**: Automatic corruption detection and re-download of models
+- **Model Integrity Validation**: Built-in validation system to ensure model files are complete and uncorrupted
 
 ## Supported Models
 
@@ -126,7 +128,8 @@ mmparser/
 │   ├── __init__.py
 │   ├── evaluator.py         # Base evaluator class
 │   ├── data_loader.py       # LongDocURL data loader
-│   └── metrics.py           # Metrics calculation
+│   ├── metrics.py           # Metrics calculation
+│   └── model_manager.py     # Model management and corruption detection
 └── venv/                     # Virtual environment (local)
 ```
 
@@ -204,6 +207,46 @@ python batch_eval.py --config configs/qwen25_vl_3b_single_test.json
 
 # Run test configuration with specific output
 python batch_eval.py --config configs/qwen25_vl_3b_test.json --output results/test_results.json
+```
+
+## Model Management
+
+### Automatic Model Corruption Detection
+
+The framework includes comprehensive model management capabilities that automatically detect corrupted models and re-download them when necessary:
+
+```python
+from utils.model_manager import ModelManager
+
+manager = ModelManager()
+
+# Validate model integrity
+is_valid, issues = manager.validate_model_integrity("qwen25-vl-3b")
+
+# Ensure model is available (with auto re-download)
+success = manager.ensure_model_available("qwen25-vl-3b")
+
+# Get model information
+info = manager.get_model_info("qwen25-vl-3b")
+```
+
+### Model Management CLI
+
+```bash
+# Validate a model
+python utils/model_manager.py --action validate --model qwen25-vl-3b
+
+# Download a model
+python utils/model_manager.py --action download --model qwen25-vl-3b
+
+# Ensure model availability
+python utils/model_manager.py --action ensure --model qwen25-vl-3b
+
+# Get model information
+python utils/model_manager.py --action info --model qwen25-vl-3b
+
+# Clean up corrupted models
+python utils/model_manager.py --action cleanup
 ```
 
 ## Configuration
@@ -342,6 +385,10 @@ The framework uses the LongDocURL dataset format. The data loader automatically 
 - [x] Enhanced batch evaluation with filtering
 - [x] Configuration file management
 - [x] Comprehensive .gitignore setup
+- [x] Automatic model corruption detection
+- [x] Model integrity validation system
+- [x] Automatic model re-download functionality
+- [x] Model management CLI tools
 
 ### 🚧 In Progress
 

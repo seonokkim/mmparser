@@ -6,6 +6,7 @@ torch>=2.0.0
 transformers>=4.35.0
 accelerate>=0.20.0
 datasets>=2.14.0
+huggingface_hub>=0.19.0
 
 # Model-specific dependencies
 transformers[torch]>=4.35.0
@@ -20,7 +21,8 @@ opencv-python>=4.8.0
 pytesseract>=0.3.10
 
 # OpenAI integration (optional)
-openai>=1.0.0
+openai>=1.65.2
+# azure-openai>=1.0.0  # Azure OpenAI specific client - commented out due to version issues
 
 # Utilities
 numpy>=1.24.0
