@@ -306,10 +306,10 @@ This project is part of the ICLR research framework and follows the same license
 If you use this framework in your research, please cite:
 
 ```bibtex
-@misc{mmparser2024,
+@misc{mmparser2025,
   title={MMParser: Multi-Model Parser for Vision-Language Evaluation},
   author={ICLR Research Team},
-  year={2024},
+  year={2025},
   note={Work in Progress}
 }
 ```
